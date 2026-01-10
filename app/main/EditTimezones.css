@@ -1,0 +1,23 @@
+.add-form {
+    width: 300px;
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.add-form__autocomplete {
+    flex-grow: 1;
+}
+
+.timezone-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.buttons-block {
+    display: flex;
+    gap: 10px;
+}
