@@ -51,9 +51,22 @@ const renderTimezoneLine = (timezone: string) => {
   );
 };
 
+function saveTimezones(timezones: string[]) {
+  window.location.hash = timezones.join(';');
+}
+
+function loadTimezones(): string[] {
+  if (!window.location.hash) {
+    return defaultState;
+  }
+  return window.location.hash
+    .slice(1) // remove leading '#'
+    .split(';');
+}
+
 export function Main() {
   const [isEditorVisible, setEditorVisible] = useState(false);
-  const [timezones, setTimezones] = useState<string[]>(defaultState);
+  const [timezones, setTimezones] = useState<string[]>(loadTimezones());
 
   return (
     <main>
@@ -64,6 +77,7 @@ export function Main() {
               timezones={timezones}
               onSave={(timezones: string[]) => {
                 setTimezones(timezones);
+                saveTimezones(timezones);
                 setEditorVisible(false);
               }}
               onCancel={() => setEditorVisible(false)}
