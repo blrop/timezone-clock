@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import Button from '@mui/material/Button';
 
-import './main.css';
-
 import { EditTimezones } from '~/main/EditTimezones';
 import { Timezone } from '~/main/Timezone';
 import { loadTimezones, saveTimezones } from '~/lib/helpers';
@@ -12,8 +10,8 @@ export function Main() {
   const [timezones, setTimezones] = useState<string[]>(loadTimezones());
 
   return (
-    <main className="flex justify-center">
-      <div className="p-3 max-w-3xl">
+    <main className="flex-grow flex flex-col items-center">
+      <div className="p-3 max-w-3xl flex-grow flex flex-col">
         <div className="mb-2 flex gap-1 justify-between items-center">
           <h1 className="text-2xl">Timezones Clock</h1>
           {
@@ -44,7 +42,7 @@ export function Main() {
               onCancel={() => setEditMode(false)}
             />
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto flex-grow">
               {timezones.map((item) => <Timezone key={item} timezone={item} /> )}
             </div>
           )

@@ -4,8 +4,6 @@ import Button from '@mui/material/Button';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 
-import './EditTimezones.css';
-
 type EditTimezonesProps = {
   timezones: string[];
   onSave: (timezones: string[]) => void;
@@ -18,10 +16,10 @@ export const EditTimezones: React.FC<EditTimezonesProps> = ({ timezones: initial
 
   return (
     <div className="border border-gray-400 rounded px-5 py-3">
-      <h2 className="text-lg mb-2">Edit timezones</h2>
+      <h2 className="text-lg mb-6">Edit timezones</h2>
 
       {timezones.map((item, index) => (
-        <div key={item} className="timezone-item">
+        <div key={item} className="flex justify-between items-center gap-2 mb-2">
           {item}
           <Button
             variant="outlined"
@@ -32,9 +30,9 @@ export const EditTimezones: React.FC<EditTimezonesProps> = ({ timezones: initial
         </div>
       ))}
 
-      <div className="add-form">
+      <div className="flex gap-2 mt-6">
         <Autocomplete
-          className="add-form__autocomplete"
+          className="flex-grow"
           options={TIME_ZONES}
           value={zone}
           onChange={(e, value) => {
@@ -53,7 +51,7 @@ export const EditTimezones: React.FC<EditTimezonesProps> = ({ timezones: initial
         >Add</Button>
       </div>
 
-      <div className="buttons-block">
+      <div className="flex mt-6 gap-2">
         <Button
           variant="contained"
           onClick={() => {
