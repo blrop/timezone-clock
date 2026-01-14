@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import Button from '@mui/material/Button';
 
 import './main.css';
@@ -28,6 +28,10 @@ const defaultState = [
   'America/New_York',
 ];
 
+function zeroPad(n: number): string {
+  return n < 10 ? `0${n}` : n.toString();
+}
+
 const renderTimezoneLine = (timezone: string) => {
   const hoursList = [];
   const time = DateTime.now().setZone(timezone);
@@ -38,16 +42,19 @@ const renderTimezoneLine = (timezone: string) => {
   }
 
   return (
-    <div key={timezone}>
-      <h2>{timezone} [{time.hour}:{time.minute}]</h2>
-      <div className="m-2 p-2 border grid grid-cols-24">
+    <React.Fragment key={timezone}>
+      <h2 className="mt-2 gap-2 inline-flex sticky left-0">
+        {timezone}
+        <span className="bg-gray-600 text-gray-100 px-1 rounded">{zeroPad(time.hour)}:{zeroPad(time.minute)}</span>
+      </h2>
+      <div className="mt-1 pb-2 flex gap-3">
         {hoursList.map((item, index) => (
-          <div key={index} className="bg-gray-200 m-2 font-mono text-center">
+          <div key={index} className="bg-gray-200 font-mono text-center min-w-10">
             {item}
           </div>
         ))}
       </div>
-    </div>
+    </React.Fragment>
   );
 };
 
@@ -69,8 +76,8 @@ export function Main() {
   const [timezones, setTimezones] = useState<string[]>(loadTimezones());
 
   return (
-    <main>
-      <div className="edit-block">
+    <main className="p-3">
+      <div className="mb-2">
         {
           isEditorVisible ?
             <EditTimezones
@@ -91,7 +98,9 @@ export function Main() {
         }
       </div>
 
-      {timezones.map((item) => renderTimezoneLine(item))}
+      <div className="overflow-x-auto">
+        {timezones.map((item) => renderTimezoneLine(item))}
+      </div>
     </main>
   );
 }
