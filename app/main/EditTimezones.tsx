@@ -19,26 +19,7 @@ export const EditTimezones: React.FC<EditTimezonesProps> = ({ timezones: initial
   return (
     <div className="border border-gray-400 rounded px-5 py-3">
       <h2 className="text-lg mb-2">Edit timezones</h2>
-      <div className="add-form">
-        <Autocomplete
-          className="add-form__autocomplete"
-          options={TIME_ZONES}
-          value={zone}
-          onChange={(e, value) => {
-            setZone(value);
-          }}
-          renderInput={(params) => <TextField {...params} label="Timezone name" />}
-        />
-        <Button
-          variant="outlined"
-          onClick={() => {
-            if (zone !== null) {
-              setTimezones([...timezones, zone]);
-            }
-          }}
-        >Add</Button>
-      </div>
-      
+
       {timezones.map((item, index) => (
         <div key={item} className="timezone-item">
           {item}
@@ -50,6 +31,28 @@ export const EditTimezones: React.FC<EditTimezonesProps> = ({ timezones: initial
           >Delete</Button>
         </div>
       ))}
+
+      <div className="add-form">
+        <Autocomplete
+          className="add-form__autocomplete"
+          options={TIME_ZONES}
+          value={zone}
+          onChange={(e, value) => {
+            setZone(value);
+          }}
+          renderInput={(params) => <TextField {...params} label="Timezone name" />}
+          size="small"
+        />
+        <Button
+          variant="outlined"
+          onClick={() => {
+            if (zone !== null) {
+              setTimezones([...timezones, zone]);
+            }
+          }}
+        >Add</Button>
+      </div>
+
       <div className="buttons-block">
         <Button
           variant="contained"

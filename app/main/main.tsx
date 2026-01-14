@@ -5,6 +5,7 @@ import Button from '@mui/material/Button';
 import './main.css';
 
 import { EditTimezones } from '~/main/EditTimezones';
+import { getCityName } from '~/lib/helpers';
 
 /*
 // https://moment.github.io/luxon/index.html#/zones?id=specifying-a-zone
@@ -44,8 +45,8 @@ const renderTimezoneLine = (timezone: string) => {
   return (
     <React.Fragment key={timezone}>
       <h2 className="mt-2 gap-2 inline-flex sticky left-0">
-        {timezone}
-        <span className="bg-gray-600 text-gray-100 px-1 rounded">{zeroPad(time.hour)}:{zeroPad(time.minute)}</span>
+        <span className="bg-gray-600 text-gray-100 px-1 rounded font-mono">{zeroPad(time.hour)}:{zeroPad(time.minute)}</span>
+        {getCityName(timezone)}
       </h2>
       <div className="mt-1 pb-2 flex gap-3">
         {hoursList.map((item, index) => (
