@@ -17,8 +17,8 @@ export const EditTimezones: React.FC<EditTimezonesProps> = ({ timezones: initial
   const [zone, setZone] = useState<string | null>('');
 
   return (
-    <div>
-      <h2>Edit timezones</h2>
+    <div className="border border-gray-400 rounded px-5 py-3">
+      <h2 className="text-lg mb-2">Edit timezones</h2>
       <div className="add-form">
         <Autocomplete
           className="add-form__autocomplete"
