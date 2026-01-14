@@ -8,7 +8,10 @@ export function getCityName(timezone: string): string {
   return timezone.substring(index + 1).replaceAll('_', ' ');
 }
 
-export function zeroPad(n: number): string {
+export function zeroPad(n: number | undefined): string {
+  if (!n) {
+    return '';
+  }
   return n < 10 ? `0${n}` : n.toString();
 }
 
