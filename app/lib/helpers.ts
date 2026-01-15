@@ -9,7 +9,7 @@ export function getCityName(timezone: string): string {
 }
 
 export function zeroPad(n: number | undefined): string {
-  if (!n) {
+  if (n === undefined) {
     return '';
   }
   return n < 10 ? `0${n}` : n.toString();
