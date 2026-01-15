@@ -11,9 +11,9 @@ export function Main() {
 
   return (
     <main className="flex-grow flex flex-col items-center">
-      <div className="p-3 max-w-3xl flex-grow flex flex-col">
+      <div className="p-3 md:max-w-3xl max-w-full flex-grow flex flex-col">
         <div className="mb-2 flex gap-1 justify-between items-center">
-          <h1 className="text-2xl">Timezones Clock</h1>
+          <h1 className="text-lg sm:text-2xl">Timezones Clock</h1>
           {
             editMode || (
               <Button
