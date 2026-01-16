@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
-import { TIME_ZONES } from '~/lib/timezones';
 import Button from '@mui/material/Button';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
+
+import { TIME_ZONES } from '~/lib/timezones';
+import { DeleteIcon } from '~/lib/icons/DeleteIcon';
+
+import './EditTimezones.css';
 
 type EditTimezonesProps = {
   timezones: string[];
@@ -12,21 +16,25 @@ type EditTimezonesProps = {
 
 export const EditTimezones: React.FC<EditTimezonesProps> = ({ timezones: initialTimezones, onSave, onCancel }) => {
   const [timezones, setTimezones] = useState(initialTimezones);
-  const [zone, setZone] = useState<string | null>('');
+  const [zone, setZone] = useState<string>('');
 
   return (
-    <div className="border border-gray-400 rounded px-5 py-3">
+    <div className="edit-timezones bg-amber-100 shadow-lg border-gray-400 rounded px-3 py-3 max-w-full">
       <h2 className="text-lg mb-6">Edit timezones</h2>
 
       {timezones.map((item, index) => (
         <div key={item} className="flex justify-between items-center gap-2 mb-2">
-          {item}
+          <div className="break-all leading-none">
+            {item}
+          </div>
           <Button
             variant="outlined"
             onClick={() => {
               setTimezones(timezones.toSpliced(index, 1));
             }}
-          >Delete</Button>
+          >
+            <DeleteIcon/>
+          </Button>
         </div>
       ))}
 
@@ -36,7 +44,7 @@ export const EditTimezones: React.FC<EditTimezonesProps> = ({ timezones: initial
           options={TIME_ZONES}
           value={zone}
           onChange={(e, value) => {
-            setZone(value);
+            setZone(value ?? '');
           }}
           renderInput={(params) => <TextField {...params} label="Timezone name" />}
           size="small"
