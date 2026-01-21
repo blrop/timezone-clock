@@ -1,3 +1,7 @@
 .edit-timezones {
     width: 25rem;
 }
+
+.dragged {
+    position: absolute;
+}
