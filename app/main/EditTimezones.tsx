@@ -19,9 +19,9 @@ export const EditTimezones: React.FC<EditTimezonesProps> = ({ timezones: initial
   const [timezones, setTimezones] = useState(initialTimezones);
   const [zone, setZone] = useState<string>('');
 
-  const [draggedElementIndex, setDraggedElementIndex] = useState<number>(-1);
-  const [draggedElementHeight, setDraggedElementHeight] = useState<number>(0);
-  const [draggedElementMouseY, setDraggedElementMouseY] = useState<number>(0);
+  let draggedElementIndex = -1;
+  let draggedElementHeight = 0;
+  let draggedElementMouseY = 0;
   const itemsWrapperRef = useRef(null);
 
   let dropIndex = -1;
@@ -31,11 +31,14 @@ export const EditTimezones: React.FC<EditTimezonesProps> = ({ timezones: initial
     if (refs === null || draggedElementIndex < 0 || !itemsWrapperRef.current) {
       return;
     }
+
+    const allItemsHeight = refs.reduce((acc, current) => (acc + current.clientHeight), 0);
+
     const wrapper = (itemsWrapperRef.current as HTMLElement);
-    const maxY = wrapper.clientHeight - draggedElementHeight + draggedElementMouseY;
+    const maxY = allItemsHeight - draggedElementHeight + draggedElementMouseY;
     const posY = clientY - wrapper.offsetTop; // mouse Y inside wrapper
 
-    if (draggedElementMouseY < posY && posY < maxY) {
+    if (draggedElementMouseY <= posY && posY <= maxY) {
       const top = posY - draggedElementMouseY;
       refs[draggedElementIndex].style.top = `${top}px`;
 
@@ -43,17 +46,18 @@ export const EditTimezones: React.FC<EditTimezonesProps> = ({ timezones: initial
 
       let previousHeights = 0;
       refs.forEach((ref, index) => {
-        if (!ref || draggedElementIndex === -1 || index === draggedElementIndex) {
+        if (!ref || draggedElementIndex < 0 || index === draggedElementIndex) {
           return;
         }
 
         const rect = ref.getBoundingClientRect();
 
+        const isLastItem = (index === refs.length - 1) || (index === refs.length - 2 && draggedElementIndex == refs.length - 1);
         if (draggedElementMiddleY <= (previousHeights + rect.height) && draggedElementMiddleY > previousHeights) {
           ref.style.marginTop = `${draggedElementHeight}px`;
           ref.style.marginBottom = '';
           dropIndex = index > draggedElementIndex ? index - 1 : index;
-        } else if (index === refs.length - 1 && draggedElementMiddleY > previousHeights) {
+        } else if (isLastItem && draggedElementMiddleY > previousHeights) {
           ref.style.marginTop = '';
           ref.style.marginBottom = `${draggedElementHeight}px`;
           dropIndex = refs.length - 1;
@@ -72,23 +76,26 @@ export const EditTimezones: React.FC<EditTimezonesProps> = ({ timezones: initial
     };
 
     const onBodyMouseUp = () => {
-      if (dropIndex === null || draggedElementIndex === -1) {
+      if (dropIndex < 0 || draggedElementIndex < 0 || itemsWrapperRef.current === null) {
         return;
       }
       refs[draggedElementIndex].style.top = '';
-
-      setTimezones(moveDraggedElement(timezones, dropIndex, draggedElementIndex));
-
-      setDraggedElementIndex(-1);
+      refs[draggedElementIndex].style.position = '';
 
       refs.forEach((ref) => {
-        if (!ref) {
-          return;
-        }
         ref.style.marginTop = '';
         ref.style.marginBottom = '';
       });
+
+      (itemsWrapperRef.current as HTMLElement).style.userSelect = '';
+
+      if (dropIndex !== draggedElementIndex) {
+        setTimezones(moveDraggedElement(timezones, dropIndex, draggedElementIndex));
+      }
+
+      draggedElementIndex = -1;
     };
+
     document.body.addEventListener('mousemove', onBodyMouseMove);
     document.body.addEventListener('touchmove', (e) => {
       console.log('touch', e); // e.touches[0].clientY
@@ -123,34 +130,31 @@ export const EditTimezones: React.FC<EditTimezonesProps> = ({ timezones: initial
   }
 
   const onGripMouseDown = (e: React.MouseEvent<HTMLDivElement>, index: number) => {
-    setDraggedElementIndex(index);
+    draggedElementIndex = index;
     const ref = refs[index];
+    ref.style.position = 'absolute';
     if (!ref || !itemsWrapperRef.current) {
       return;
     }
-    setDraggedElementHeight(ref.offsetHeight);
+    draggedElementHeight = ref.offsetHeight;
     const mouseY = e.clientY - ref.getBoundingClientRect().top;
-    setDraggedElementMouseY(mouseY);
+    draggedElementMouseY = mouseY;
 
-    const posY = e.clientY - (itemsWrapperRef.current as HTMLElement).offsetTop;
+    const itemsWrapper = (itemsWrapperRef.current as HTMLElement);
+    const posY = e.clientY - itemsWrapper.offsetTop;
     ref.style.top = `${posY - draggedElementMouseY}px`;
+
+    itemsWrapper.style.userSelect = 'none';
 
     onMoveEvent(e.clientY, index, ref.offsetHeight, mouseY);
   };
 
-  const noSelectClass = draggedElementIndex === -1 ? '' : 'select-none';
-
   return (
-    <div className={`edit-timezones bg-amber-100 shadow-lg border-gray-400 rounded px-3 py-3 max-w-full ${noSelectClass}`}>
+    <div className={`edit-timezones bg-amber-100 shadow-lg border-gray-400 rounded px-3 py-3 max-w-full`}>
       <h2 className="text-lg mb-6 font-bold">Edit timezones</h2>
 
-      <div ref={itemsWrapperRef} className="relative border border-black">
+      <div ref={itemsWrapperRef} className="relative overflow-auto">
         {timezones.map((item, index) => {
-          let itemDraggedClass = '';
-          if (draggedElementIndex === index) {
-            itemDraggedClass = 'dragged';
-          }
-
           return (
             <React.Fragment key={item}>
               <div
@@ -159,7 +163,7 @@ export const EditTimezones: React.FC<EditTimezonesProps> = ({ timezones: initial
                     refs[index] = el;
                   }
                 }}
-                className={`flex justify-between items-center gap-2 py-1 w-full ${itemDraggedClass}`}
+                className={`flex justify-between items-center gap-2 py-1 w-full`}
               >
                 <div className="flex items-center">
                   <div className="opacity-25 mr-2" onMouseDown={(e) => onGripMouseDown(e, index)}>
