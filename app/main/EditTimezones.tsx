@@ -23,53 +23,54 @@ export const EditTimezones: React.FC<EditTimezonesProps> = ({ timezones: initial
   const [draggedElementHeight, setDraggedElementHeight] = useState<number>(0);
   const [draggedElementMouseY, setDraggedElementMouseY] = useState<number>(0);
   const itemsWrapperRef = useRef(null);
-  let dropIndex = -1;
 
+  let dropIndex = -1;
   let refs: (HTMLElement)[] = [];
 
+  const onMoveEvent = (clientY: number, draggedElementIndex: number, draggedElementHeight: number, draggedElementMouseY: number) => {
+    if (refs === null || draggedElementIndex < 0 || !itemsWrapperRef.current) {
+      return;
+    }
+    const wrapper = (itemsWrapperRef.current as HTMLElement);
+    const maxY = wrapper.clientHeight - draggedElementHeight + draggedElementMouseY;
+    const posY = clientY - wrapper.offsetTop; // mouse Y inside wrapper
+
+    if (draggedElementMouseY < posY && posY < maxY) {
+      const top = posY - draggedElementMouseY;
+      refs[draggedElementIndex].style.top = `${top}px`;
+
+      const draggedElementMiddleY = top + (draggedElementHeight / 2);
+
+      let previousHeights = 0;
+      refs.forEach((ref, index) => {
+        if (!ref || draggedElementIndex === -1 || index === draggedElementIndex) {
+          return;
+        }
+
+        const rect = ref.getBoundingClientRect();
+
+        if (draggedElementMiddleY <= (previousHeights + rect.height) && draggedElementMiddleY > previousHeights) {
+          ref.style.marginTop = `${draggedElementHeight}px`;
+          ref.style.marginBottom = '';
+          dropIndex = index > draggedElementIndex ? index - 1 : index;
+        } else if (index === refs.length - 1 && draggedElementMiddleY > previousHeights) {
+          ref.style.marginTop = '';
+          ref.style.marginBottom = `${draggedElementHeight}px`;
+          dropIndex = refs.length - 1;
+        } else {
+          ref.style.marginTop = '';
+          ref.style.marginBottom = '';
+        }
+        previousHeights += rect.height;
+      });
+    }
+  };
+
   useEffect(() => {
-    // const onMoveEvent = () => {
-    //
-    // };
-
     const onBodyMouseMove = (e: MouseEvent) => {
-      if (refs === null || draggedElementIndex < 0 || !itemsWrapperRef.current) {
-        return;
-      }
-      const wrapper = (itemsWrapperRef.current as HTMLElement);
-      const maxY = wrapper.clientHeight - draggedElementHeight + draggedElementMouseY;
-      const posY = e.clientY - wrapper.offsetTop; // mouse Y inside wrapper
-
-      if (draggedElementMouseY < posY && posY < maxY) {
-        const top = posY - draggedElementMouseY;
-        refs[draggedElementIndex].style.top = `${top}px`;
-
-        const draggedElementMiddleY = top + (draggedElementHeight / 2);
-
-        let previousHeights = 0;
-        refs.forEach((ref, index) => {
-          if (!ref || draggedElementIndex === -1 || index === draggedElementIndex) {
-            return;
-          }
-
-          const rect = ref.getBoundingClientRect();
-
-          if (draggedElementMiddleY <= (previousHeights + rect.height) && draggedElementMiddleY > previousHeights) {
-            ref.style.marginTop = `${draggedElementHeight}px`;
-            ref.style.marginBottom = '';
-            dropIndex = index > draggedElementIndex ? index - 1 : index;
-          } else if (index === refs.length - 1 && draggedElementMiddleY > previousHeights) {
-            ref.style.marginTop = '';
-            ref.style.marginBottom = `${draggedElementHeight}px`;
-            dropIndex = refs.length - 1;
-          } else {
-            ref.style.marginTop = '';
-            ref.style.marginBottom = '';
-          }
-          previousHeights += rect.height;
-        });
-      }
+      onMoveEvent(e.clientY, draggedElementIndex, draggedElementHeight, draggedElementMouseY);
     };
+
     const onBodyMouseUp = () => {
       if (dropIndex === null || draggedElementIndex === -1) {
         return;
@@ -128,10 +129,13 @@ export const EditTimezones: React.FC<EditTimezonesProps> = ({ timezones: initial
       return;
     }
     setDraggedElementHeight(ref.offsetHeight);
-    setDraggedElementMouseY(e.clientY - ref.getBoundingClientRect().top);
+    const mouseY = e.clientY - ref.getBoundingClientRect().top;
+    setDraggedElementMouseY(mouseY);
 
     const posY = e.clientY - (itemsWrapperRef.current as HTMLElement).offsetTop;
     ref.style.top = `${posY - draggedElementMouseY}px`;
+
+    onMoveEvent(e.clientY, index, ref.offsetHeight, mouseY);
   };
 
   const noSelectClass = draggedElementIndex === -1 ? '' : 'select-none';
@@ -152,7 +156,7 @@ export const EditTimezones: React.FC<EditTimezonesProps> = ({ timezones: initial
               <div
                 ref={(el) => {
                   if (el) {
-                    refs.push(el);
+                    refs[index] = el;
                   }
                 }}
                 className={`flex justify-between items-center gap-2 py-1 w-full ${itemDraggedClass}`}
