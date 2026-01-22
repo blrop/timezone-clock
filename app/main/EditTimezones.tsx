@@ -19,14 +19,13 @@ export const EditTimezones: React.FC<EditTimezonesProps> = ({ timezones: initial
   const [timezones, setTimezones] = useState(initialTimezones);
   const [zone, setZone] = useState<string>('');
 
-  const [draggedElementIndex, setDraggedElementIndex] = useState<number | null>(null);
+  const [draggedElementIndex, setDraggedElementIndex] = useState<number>(-1);
   const [draggedElementHeight, setDraggedElementHeight] = useState<number>(0);
   const [draggedElementMouseY, setDraggedElementMouseY] = useState<number>(0);
-  const [draggedElementRef, setDraggedElementRef] = useState<HTMLElement | null>();
   const itemsWrapperRef = useRef(null);
   let dropIndex = -1;
 
-  let refs: (HTMLElement | null)[] = [];
+  let refs: (HTMLElement)[] = [];
 
   useEffect(() => {
     // const onMoveEvent = () => {
@@ -34,7 +33,7 @@ export const EditTimezones: React.FC<EditTimezonesProps> = ({ timezones: initial
     // };
 
     const onBodyMouseMove = (e: MouseEvent) => {
-      if (!draggedElementRef || !itemsWrapperRef.current) {
+      if (refs === null || draggedElementIndex < 0 || !itemsWrapperRef.current) {
         return;
       }
       const wrapper = (itemsWrapperRef.current as HTMLElement);
@@ -43,13 +42,13 @@ export const EditTimezones: React.FC<EditTimezonesProps> = ({ timezones: initial
 
       if (draggedElementMouseY < posY && posY < maxY) {
         const top = posY - draggedElementMouseY;
-        draggedElementRef.style.top = `${top}px`;
+        refs[draggedElementIndex].style.top = `${top}px`;
 
         const draggedElementMiddleY = top + (draggedElementHeight / 2);
 
         let previousHeights = 0;
         refs.forEach((ref, index) => {
-          if (!ref || draggedElementIndex === null || index === draggedElementIndex) {
+          if (!ref || draggedElementIndex === -1 || index === draggedElementIndex) {
             return;
           }
 
@@ -72,15 +71,14 @@ export const EditTimezones: React.FC<EditTimezonesProps> = ({ timezones: initial
       }
     };
     const onBodyMouseUp = () => {
-      if (!draggedElementRef || dropIndex === null || draggedElementIndex === null) {
+      if (dropIndex === null || draggedElementIndex === -1) {
         return;
       }
-      draggedElementRef.style.top = '';
+      refs[draggedElementIndex].style.top = '';
 
       setTimezones(moveDraggedElement(timezones, dropIndex, draggedElementIndex));
 
-      setDraggedElementIndex(null);
-      setDraggedElementRef(null);
+      setDraggedElementIndex(-1);
 
       refs.forEach((ref) => {
         if (!ref) {
@@ -129,16 +127,14 @@ export const EditTimezones: React.FC<EditTimezonesProps> = ({ timezones: initial
     if (!ref || !itemsWrapperRef.current) {
       return;
     }
-    setDraggedElementRef(ref);
-    setDraggedElementHeight(ref.offsetHeight || 0);
-    const mouseY = e.clientY - ref.getBoundingClientRect().top;
-    setDraggedElementMouseY(mouseY);
+    setDraggedElementHeight(ref.offsetHeight);
+    setDraggedElementMouseY(e.clientY - ref.getBoundingClientRect().top);
 
     const posY = e.clientY - (itemsWrapperRef.current as HTMLElement).offsetTop;
-    ref.style.top = `${posY - mouseY}px`;
+    ref.style.top = `${posY - draggedElementMouseY}px`;
   };
 
-  const noSelectClass = draggedElementIndex !== null ? 'select-none' : '';
+  const noSelectClass = draggedElementIndex === -1 ? '' : 'select-none';
 
   return (
     <div className={`edit-timezones bg-amber-100 shadow-lg border-gray-400 rounded px-3 py-3 max-w-full ${noSelectClass}`}>
@@ -146,19 +142,18 @@ export const EditTimezones: React.FC<EditTimezonesProps> = ({ timezones: initial
 
       <div ref={itemsWrapperRef} className="relative border border-black">
         {timezones.map((item, index) => {
-          // let dummyItem = null;
           let itemDraggedClass = '';
           if (draggedElementIndex === index) {
-            // dummyItem = <div className="py-1" style={{ height: `${draggedElementHeight}px` }}/>;
             itemDraggedClass = 'dragged';
           }
 
           return (
             <React.Fragment key={item}>
-              {/*{dummyItem}*/}
               <div
                 ref={(el) => {
-                  refs.push(el);
+                  if (el) {
+                    refs.push(el);
+                  }
                 }}
                 className={`flex justify-between items-center gap-2 py-1 w-full ${itemDraggedClass}`}
               >
