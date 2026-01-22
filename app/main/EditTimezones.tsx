@@ -221,9 +221,13 @@ export const EditTimezones: React.FC<EditTimezonesProps> = ({ timezones: initial
         <Button
           variant="outlined"
           onClick={() => {
-            if (zone !== null) {
+            if (!zone) {
+              return;
+            }
+            if (!timezones.includes(zone)) {
               setTimezones([...timezones, zone]);
             }
+            setZone('');
           }}
         >Add</Button>
       </div>
