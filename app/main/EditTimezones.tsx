@@ -70,6 +70,11 @@ export const EditTimezones: React.FC<EditTimezonesProps> = ({ timezones: initial
     }
   };
 
+  const onBodyTouchMove = (e: TouchEvent) => {
+    e.preventDefault();
+    onMoveEvent(e.touches[0].clientY, draggedElementIndex, draggedElementHeight, draggedElementMouseY);
+  };
+
   useEffect(() => {
     const onBodyMouseMove = (e: MouseEvent) => {
       onMoveEvent(e.clientY, draggedElementIndex, draggedElementHeight, draggedElementMouseY);
@@ -94,17 +99,20 @@ export const EditTimezones: React.FC<EditTimezonesProps> = ({ timezones: initial
       }
 
       draggedElementIndex = -1;
+
+      document.body.removeEventListener('touchmove', onBodyTouchMove);
     };
 
     document.body.addEventListener('mousemove', onBodyMouseMove);
-    document.body.addEventListener('touchmove', (e) => {
-      console.log('touch', e); // e.touches[0].clientY
-    });
+
     document.body.addEventListener('mouseup', onBodyMouseUp);
+    document.body.addEventListener('touchend', onBodyMouseUp);
 
     return () => {
       document.body.removeEventListener('mousemove', onBodyMouseMove);
+
       document.body.removeEventListener('mouseup', onBodyMouseUp);
+      document.body.removeEventListener('touchend', onBodyMouseUp);
     }
   });
 
@@ -129,7 +137,16 @@ export const EditTimezones: React.FC<EditTimezonesProps> = ({ timezones: initial
     return newArray;
   }
 
-  const onGripMouseDown = (e: React.MouseEvent<HTMLDivElement>, index: number) => {
+  const onGripMouseDown = (e: React.MouseEvent, index: number) => {
+    gripDownEvent(e.clientY, index);
+  };
+
+  const onGripTouchStart = (e: React.TouchEvent, index: number) => {
+    gripDownEvent(e.touches[0].clientY, index);
+    document.body.addEventListener('touchmove', onBodyTouchMove, { passive: false });
+  };
+
+  const gripDownEvent = (clientY: number, index: number) => {
     draggedElementIndex = index;
     const ref = refs[index];
     ref.style.position = 'absolute';
@@ -137,16 +154,16 @@ export const EditTimezones: React.FC<EditTimezonesProps> = ({ timezones: initial
       return;
     }
     draggedElementHeight = ref.offsetHeight;
-    const mouseY = e.clientY - ref.getBoundingClientRect().top;
+    const mouseY = clientY - ref.getBoundingClientRect().top;
     draggedElementMouseY = mouseY;
 
     const itemsWrapper = (itemsWrapperRef.current as HTMLElement);
-    const posY = e.clientY - itemsWrapper.offsetTop;
+    const posY = clientY - itemsWrapper.offsetTop;
     ref.style.top = `${posY - draggedElementMouseY}px`;
 
     itemsWrapper.style.userSelect = 'none';
 
-    onMoveEvent(e.clientY, index, ref.offsetHeight, mouseY);
+    onMoveEvent(clientY, index, ref.offsetHeight, mouseY);
   };
 
   return (
@@ -166,7 +183,10 @@ export const EditTimezones: React.FC<EditTimezonesProps> = ({ timezones: initial
                 className={`flex justify-between items-center gap-2 py-1 w-full`}
               >
                 <div className="flex items-center">
-                  <div className="opacity-25 mr-2" onMouseDown={(e) => onGripMouseDown(e, index)}>
+                  <div
+                    className="opacity-25 mr-2"
+                    onMouseDown={(e) => onGripMouseDown(e, index)}
+                    onTouchStart={(e) => onGripTouchStart(e, index)}>
                     <BarsIcon />
                   </div>
                   <div className="break-all leading-none">
