@@ -24,7 +24,7 @@ export const EditTimezones: React.FC<EditTimezonesProps> = ({ timezones: initial
   const [draggedElementMouseY, setDraggedElementMouseY] = useState<number>(0);
   const [draggedElementRef, setDraggedElementRef] = useState<HTMLElement | null>();
   const itemsWrapperRef = useRef(null);
-  const [dropIndex, setDropIndex] = useState<number | null>(null);
+  let dropIndex = -1;
 
   let refs: (HTMLElement | null)[] = [];
 
@@ -39,33 +39,35 @@ export const EditTimezones: React.FC<EditTimezonesProps> = ({ timezones: initial
       }
       const wrapper = (itemsWrapperRef.current as HTMLElement);
       const maxY = wrapper.clientHeight - draggedElementHeight + draggedElementMouseY;
-      const posY = e.clientY - wrapper.offsetTop;
+      const posY = e.clientY - wrapper.offsetTop; // mouse Y inside wrapper
 
       if (draggedElementMouseY < posY && posY < maxY) {
         const top = posY - draggedElementMouseY;
         draggedElementRef.style.top = `${top}px`;
 
+        const draggedElementMiddleY = top + (draggedElementHeight / 2);
+
+        let previousHeights = 0;
         refs.forEach((ref, index) => {
-          if (!ref) {
+          if (!ref || draggedElementIndex === null || index === draggedElementIndex) {
             return;
           }
+
           const rect = ref.getBoundingClientRect();
-          const mouseY = e.clientY - draggedElementMouseY;
-          // console.log(rect.top, e.clientY, rect.bottom);
-          if ((rect.top + rect.height / 2) <= mouseY && mouseY <= (rect.bottom + rect.height / 2)) {
-            ref.style.marginTop = '';
-            ref.style.marginBottom = `${draggedElementHeight}px`;
-            setDropIndex(index);
-            console.log('a; dropIndex:', index);
-          } else if (mouseY < (rect.top + rect.height / 2) && index === 0) {
+
+          if (draggedElementMiddleY <= (previousHeights + rect.height) && draggedElementMiddleY > previousHeights) {
             ref.style.marginTop = `${draggedElementHeight}px`;
             ref.style.marginBottom = '';
-            setDropIndex(0);
-            console.log('b; dropIndex: 0');
-          } else {
-            ref.style.marginBottom = '';
+            dropIndex = index > draggedElementIndex ? index - 1 : index;
+          } else if (index === refs.length - 1 && draggedElementMiddleY > previousHeights) {
             ref.style.marginTop = '';
+            ref.style.marginBottom = `${draggedElementHeight}px`;
+            dropIndex = refs.length - 1;
+          } else {
+            ref.style.marginTop = '';
+            ref.style.marginBottom = '';
           }
+          previousHeights += rect.height;
         });
       }
     };
@@ -103,10 +105,17 @@ export const EditTimezones: React.FC<EditTimezonesProps> = ({ timezones: initial
   function moveDraggedElement<T>(array: T[], dropIndex: number, draggedElementIndex: number): T[] {
     const newArray = [];
     for (let i = 0; i < array.length; i++) {
-      if (i === dropIndex) {
-        newArray.push(array[draggedElementIndex]);
-      }
       if (i === draggedElementIndex) {
+        continue;
+      }
+      if (i === dropIndex) {
+        if (dropIndex < draggedElementIndex) {
+          newArray.push(array[draggedElementIndex]);
+          newArray.push(array[i]);
+        } else {
+          newArray.push(array[i]);
+          newArray.push(array[draggedElementIndex]);
+        }
         continue;
       }
       newArray.push(array[i]);
