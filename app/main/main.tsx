@@ -3,7 +3,7 @@ import Button from '@mui/material/Button';
 
 import { EditTimezones } from '~/main/EditTimezones';
 import { Timezone } from '~/main/Timezone';
-import { loadTimezones, saveTimezones } from '~/lib/helpers';
+import { getColorHueForItem, loadTimezones, saveTimezones } from '~/lib/helpers';
 import { EditIcon } from '~/lib/icons/EditIcon';
 
 export function Main() {
@@ -40,7 +40,10 @@ export function Main() {
             />
           ) : (
             <div className="overflow-x-auto flex-grow">
-              {timezones.map((item) => <Timezone key={item} timezone={item} /> )}
+              {timezones.map((item, index) => (
+                  <Timezone key={item} timezone={item} colorHue={getColorHueForItem(index, timezones.length)} />
+                )
+              )}
             </div>
           )
         }

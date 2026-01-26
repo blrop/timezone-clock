@@ -27,3 +27,8 @@ export function loadTimezones(): string[] {
     .slice(1) // remove leading '#'
     .split(';');
 }
+
+export function getColorHueForItem(index: number, totalItems: number): string {
+  const colorGap = totalItems <= 6 ? 60 : Math.round(360 / totalItems);
+  return (index * colorGap).toString();
+}
