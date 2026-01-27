@@ -1,4 +1,4 @@
-import { DEFAULT_TIMEZONE_1, DEFAULT_TIMEZONE_2 } from '~/lib/constants';
+import { DEFAULT_TIMEZONE_1, DEFAULT_TIMEZONE_2, HASH_DELIMITER } from '~/lib/constants';
 import { DateTime } from 'luxon';
 
 export function getCityName(timezone: string): string {
@@ -16,8 +16,8 @@ export function zeroPad(n: number | undefined): string {
   return n < 10 ? `0${n}` : n.toString();
 }
 
-export function saveTimezones(timezones: string[]) {
-  window.location.hash = timezones.join(';');
+export function getTimezonesHash(timezones: string[]) {
+  return timezones.join(HASH_DELIMITER);
 }
 
 export function loadTimezones(): string[] {
@@ -32,7 +32,7 @@ export function loadTimezones(): string[] {
 
   return window.location.hash
     .slice(1) // remove leading '#'
-    .split(';');
+    .split(HASH_DELIMITER);
 }
 
 export function getColorHueForItem(index: number, totalItems: number): string {

@@ -1,3 +1,8 @@
-import { type RouteConfig, index } from "@react-router/dev/routes";
+import { type RouteConfig, index, route } from '@react-router/dev/routes';
 
-export default [index("routes/home.tsx")] satisfies RouteConfig;
+export default [
+  route('/', 'routes/Home.tsx', [
+    index('routes/main/MainScreen.tsx'), // replace by main screen
+    route('/edit', 'routes/edit/EditScreen.tsx'),
+  ]),
+] satisfies RouteConfig;
